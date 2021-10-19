@@ -1,5 +1,7 @@
 <template>
-  <div v-for="(item, index) in data.list" :ref=" (el: any) => { if (el) data.saveElement(el) }">this is a div element: {{ item }}</div>
+    <div>
+        <div ref='root'>root</div>
+    </div>
 </template>
 
 <script lang='ts'>
@@ -14,23 +16,16 @@ export default {
         title: String
     },
     setup() {
-        const data = reactive({
-            list: [1, 2, 3],
-            divs: [],
-            saveElement(el: HTMLDivElement): void {
-                divs[divs.length] = el
-            },
-        })
-        onBeforeUpdate (() => {
-            divs.value = []
-        }) 
+        const root = ref(null)
+ 
         watchEffect(() => {
-            console.log(root.value)
+            console.log('root', root.value)
+        }, 
+        {
+            flush: 'post'
         })
         return {
-            data,
-            divs,
-            
+            root
         }
         // return () => <div ref={ root } />
     }
