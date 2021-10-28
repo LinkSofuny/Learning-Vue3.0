@@ -1,17 +1,14 @@
 <script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
-import DemoComponentsVue from './components/DemoComponents.vue';
-import { ref } from 'vue'
-
-const demoTitle = ref('测试')
 </script>
 
 <template>
-  <img alt="Vue logo" src="./assets/logo.png" />
-  <input type="text" v-model='demoTitle'>
-  <DemoComponentsVue :title='demoTitle' />
-  <HelloWorld msg="Hello Vue 3 + TypeScript + Vite" />
+  <div>
+    <router-link to="/">首页</router-link> | 
+    <router-link to="/about">关于</router-link>
+  </div>
+  <router-view></router-view>
 </template>
+
 
 <style>
 #app {
