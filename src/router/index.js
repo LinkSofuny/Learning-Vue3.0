@@ -2,7 +2,7 @@ import {
     createRouter,
     createWebHashHistory
 } from 'vue-router'
-import Home from '../pages/home.vue'
+import Home from '../pages/effect.vue'
 import About from '../pages/About.vue'
 
 const routes = [
