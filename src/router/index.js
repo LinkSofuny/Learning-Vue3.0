@@ -2,17 +2,11 @@ import {
     createRouter,
     createWebHashHistory
 } from 'vue-router'
-import Home from '../pages/effect.vue'
 import About from '../pages/About.vue'
 
 const routes = [
     {
         path: '/',
-        name: 'Home',
-        component: Home
-    },
-    {
-        path: '/about',
         name: 'About',
         component: About
     },
