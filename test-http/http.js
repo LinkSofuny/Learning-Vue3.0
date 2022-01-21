@@ -9,7 +9,6 @@ const extractExt = filename => filename.slice(filename.lastIndexOf('.'), filenam
 const fileHashPath = hash => path.resolve(UPLOAD_DIR, hash)
 // 切片列表
 const createUploadedList = async fileHash => {
-    console.log("path", fileHashPath(fileHash))
     return fse.existsSync(fileHashPath(fileHash))
         ? fse.readdir(fileHashPath(fileHash))
         : []
