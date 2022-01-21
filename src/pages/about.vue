@@ -4,7 +4,7 @@
     <input type="file" @change="handleFileChange">
     <el-button type="primary" @click="handleUpload">Upload</el-button>
     <el-button type="info" @click="handleStop">stop Upload</el-button>
-    <el-button type="success" @click="handlerResume">Resume</el-button>
+    <el-button type="success" @click="handlerResume" disabled>Resume</el-button>
 </template>
 
 <script setup>
@@ -74,19 +74,20 @@ async function handleUpload() {
 async function upLoadChunks (uploadedList = []) {
     const requsetList = data
     .filter(({ hash }) => !uploadedList.includes(hash))
-    .map(({ chunk, hash, fileHash }) => {
+    .map(({ chunk, hash, fileHash, index }) => {
         const formData = new FormData()
         formData.append('fileHash', fileHash)
         formData.append('chunk', chunk)
         formData.append('hash', hash)
         formData.append('filename', container.file.name)
-        return formData
+        return { formData, index }
     })
-    .map(formData => {
+    .map(({ formData, index }) => {
         return request({
             url: 'http://localhost:8080',
             data: formData,
-            requestList: requsetListNow
+            requestList: requsetListNow,
+            onProgress: this.createProgressHandler(data[index]),
         })
     })
     await Promise.all(requsetList)
@@ -129,6 +130,13 @@ async function verifyUpload(filename, fileHash) {
 async function handleStop() {
     requsetListNow.forEach(xhr => xhr?.abort());
     requsetListNow = []
+}
+
+// 进度条
+createProgressHandler(item) {
+    return e => {
+        item.percentage = parseInt(String((e.loaded / e.total) * 100))
+    }
 }
 </script>
 
