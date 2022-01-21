@@ -13,9 +13,14 @@ export default function request({
         )
         xhr.send(data)
         xhr.onload = e => {
+            if (requestList) {
+                const xhrIndex = requestList.findIndex(item => item === xhr)
+                requestList.splice(xhrIndex, 1)
+            }
             resolve({
               data: e.target.response
             })
-        };
+        }
+        requestList?.push(xhr)
     })
 }

@@ -5,6 +5,15 @@ const fse = require("fs-extra");
 const multiparty = require("multiparty");
 
 const UPLOAD_DIR = path.resolve(__dirname, "./", "target"); // 大文件存储目录
+const extractExt = filename => filename.slice(filename.lastIndexOf('.'), filename.length)
+const fileHashPath = hash => path.resolve(UPLOAD_DIR, hash)
+// 切片列表
+const createUploadedList = async fileHash => {
+    console.log("path", fileHashPath(fileHash))
+    return fse.existsSync(fileHashPath(fileHash))
+        ? fse.readdir(fileHashPath(fileHash))
+        : []
+}
 
 // 处理接口数据
 const resolvePost = req => {
@@ -32,7 +41,7 @@ const pipeStream = (path, writeStream) => {
 
 // 合并切片
 const mergeFileChunk = async (filePath, fileHash, size) => {
-    const chunkDir = path.resolve(UPLOAD_DIR, fileHash)
+    const chunkDir = fileHashPath(fileHash)
     const chunkPaths = await fse.readdir(chunkDir)
     // 排序切片
     chunkPaths.sort((a, b) => a.split('-')[1] - b.split('-')[1])
@@ -69,7 +78,7 @@ server.on("request", async (req, res) => {
         const [fileHash] = fields.fileHash
         const [hash] = fields.hash
         const [filename] = fields.filename
-        const chunkDir = path.resolve(UPLOAD_DIR, fileHash)
+        const chunkDir = fileHashPath(fileHash)
 
         if (!fse.existsSync(chunkDir)) {
             await fse.mkdirs(chunkDir);
@@ -91,6 +100,27 @@ server.on("request", async (req, res) => {
                 message: 'file merged success'
             })
         )
+    }
+
+    if (req.url === '/verify') {
+        const data = await resolvePost(req)
+        const { fileHash, filename } = data
+        const ext = extractExt(filename)
+        const filePath = path.resolve(UPLOAD_DIR, `${filename}`)
+        if (fse.existsSync(filePath)) {
+            res.end(
+                JSON.stringify({
+                    shouldUpload: false
+                })
+            )
+        } else {
+            res.end(
+                JSON.stringify({
+                    shouldUpload: true,
+                    uploadedList: await createUploadedList(fileHash)
+                })
+            )
+        }
     }
 })
 
