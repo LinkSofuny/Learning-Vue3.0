@@ -133,7 +133,7 @@ async function handleStop() {
 }
 
 // 进度条
-createProgressHandler(item) {
+function createProgressHandler(item) {
     return e => {
         item.percentage = parseInt(String((e.loaded / e.total) * 100))
     }
