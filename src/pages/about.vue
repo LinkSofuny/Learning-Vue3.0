@@ -44,7 +44,8 @@ async function handleUpload() {
         request, 
         mergeRequest, 
         file: container.file, 
-        verifyUpload
+        checkUploaded: verifyUpload,
+        allCal: false
     })
 }
 
