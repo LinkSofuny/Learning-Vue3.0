@@ -41,11 +41,20 @@ async function handlerResume() {
 async function handleUpload() {
     if (!container.file) return
     await createChunkUploadTask({
-        request, 
+        chunkRequset: chunkRequset, 
         mergeRequest, 
         file: container.file, 
         checkUploaded: verifyUpload,
         allCal: false
+    })
+}
+
+// 切片上传
+async function chunkRequset(data, onProgress) {
+    return await request({
+        url: 'http://localhost:8080',
+        data,
+        onProgress
     })
 }
 

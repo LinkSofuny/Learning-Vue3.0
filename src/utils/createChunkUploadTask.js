@@ -1,7 +1,15 @@
 const SIZE = 10 * 1024 * 1024
 
 
-export default async function createChunkUploadTask ({request, mergeRequest, file, checkUploaded, size = SIZE, allCal = true}) {
+export default async function createChunkUploadTask ({
+    chunkRequset, 
+    mergeRequest, 
+    file, 
+    checkUploaded, 
+    size = SIZE, 
+    allCal = true,
+    concurNum = 4
+}) {
     const fileChunkList = []
     let fileChunkData = []
     // 创建切片和文件hash
@@ -37,7 +45,7 @@ export default async function createChunkUploadTask ({request, mergeRequest, fil
         })
     }
 
-    async function createUploadRequest (uploadedList = [], hash) {
+    function createUploadRequest (uploadedList = [], hash) {
         const requsetList = fileChunkData
         .filter(({ hash }) => !uploadedList.includes(hash))
         .map(({ chunk, hash, fileHash, index }) => {
@@ -49,17 +57,38 @@ export default async function createChunkUploadTask ({request, mergeRequest, fil
             return { formData, index }
         })
         .map(({ formData, index }) => {
-            return request({
-                url: 'http://localhost:8080',
-                data: formData,
-                onProgress: createProgressHandler(fileChunkData[index]),
-            })
+            return () => chunkRequset(formData, createProgressHandler(fileChunkData[index]))
         })
-        await Promise.all(requsetList)
-
-        if (uploadedList.length + requsetList.length === fileChunkData.length) {
-            await mergeRequest(file.name, size, hash)
-        }
+        return requsetList
+    }
+    /**
+     * 
+     * @param {*} requsetList 切片数组
+     * @param {*} concurrencyControlNum 并发数量
+     */
+    async function concurrencyControl (requsetList, concurrencyControlNum) {
+        return new Promise(resolve => {
+            const len = requsetList.length
+            let max = concurrencyControlNum
+            let counter = 0
+            let idx = 0
+            const start = async () => {
+                while (idx < len && max > 0) {
+                    max--
+                    console.log('并发请求开始', idx)
+                    requsetList[idx++]().then(() => {
+                        max++
+                        counter++
+                        if (counter === len) {
+                            resolve()
+                        } else {
+                            start()
+                        }
+                    })
+                }
+            }
+            start()
+        })
     }
 
     // 进度条
@@ -79,6 +108,13 @@ export default async function createChunkUploadTask ({request, mergeRequest, fil
         return
     }
     // 创建切片请求
-    createUploadRequest(uploadedList, hash)
+    debugger
+    const requsetList = createUploadRequest(uploadedList, hash)
+    // 并发控制 todo
+    await concurrencyControl(requsetList, concurNum)
+    // 请求合并 todo
+    if (uploadedList.length + requsetList.length === fileChunkData.length) {
+        await mergeRequest(file.name, size, hash)
+    }
 }
 

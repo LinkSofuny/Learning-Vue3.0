@@ -1,6 +1,6 @@
-self.importScripts('./spark-md5.min.js')
+self.importScripts('./spark-md5.min.js') // @todo
 function createHashComputer (fileChunkList) {
-    const spark = new self.SparkMD5.ArrayBuffer()  // todo
+    const spark = new self.SparkMD5.ArrayBuffer()  // @todo
     const reader = new FileReader()
 
     function allFileHash(index) {
