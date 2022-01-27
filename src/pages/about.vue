@@ -11,7 +11,7 @@
 <script setup>
 import { reactive, ref } from 'vue'
 import request from '../utils/request.js'
-import createChunkUploadTask from '../../../frag-upload/src/createChunkUploadTask.ts'
+import createChunkUploadTask from '../../../frag-upload/src/main.js'
 
 const SIZE = 10 * 1024 * 1024
 let container = reactive({ file: null, hash: '', worker: null })
