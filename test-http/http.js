@@ -40,6 +40,7 @@ const pipeStream = (path, writeStream) => {
 
 // 合并切片
 const mergeFileChunk = async (filePath, fileHash, size) => {
+    debugger
     const chunkDir = fileHashPath(fileHash)
     const chunkPaths = await fse.readdir(chunkDir)
     // 排序切片

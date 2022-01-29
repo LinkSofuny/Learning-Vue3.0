@@ -11,7 +11,7 @@
 <script setup>
 import { reactive, ref } from 'vue'
 import request from '../utils/request.js'
-import createChunkUploadTask from '../../../frag-upload/src/main.js'
+import createChunkUploadTask from '../../../chunk-up/src/main.ts'
 
 const SIZE = 10 * 1024 * 1024
 let container = reactive({ file: null, hash: '', worker: null })
@@ -26,7 +26,6 @@ function handleFileChange(e) {
     container.file = file
 }
 
-
 // todo 此时还没有hash值
 async function handlerResume() {
     const { uploadedList } = await verifyUpload(
@@ -36,16 +35,17 @@ async function handlerResume() {
     // await upLoadChunks(uploadedList)
 }
 
-
 // 上传
 async function handleUpload() {
+    console.log('container.file', container.file);
     if (!container.file) return
-    await createChunkUploadTask({
+    createChunkUploadTask({
         chunkRequset: chunkRequset, 
-        mergeRequest, 
+        uploaded: mergeRequest, 
         file: container.file, 
         checkUploaded: verifyUpload,
-        allCal: false
+        allCal: false,
+        concurNum: 10
     })
 }
 
@@ -59,18 +59,21 @@ async function chunkRequset(data, onProgress) {
 }
 
 // 通知合并
-async function mergeRequest(filename, size, fileHash) {
-    await request({
-        url: "http://localhost:8080/merge",
-        headers: {
-            "content-type": "application/json"
-        },
-        data: JSON.stringify({
-            filename,
-            size: SIZE,
-            fileHash,
+async function mergeRequest(fulfilled, filename, size, fileHash) {
+    if (fulfilled) {
+        await request({
+            url: "http://localhost:8080/merge",
+            headers: {
+                "content-type": "application/json"
+            },
+            data: JSON.stringify({
+                filename,
+                size,
+                fileHash,
+            })
         })
-    })
+    }
+    
 }
 
 // 文件秒传
