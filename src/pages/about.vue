@@ -43,7 +43,7 @@ async function handleUpload() {
         chunkRequset: chunkRequset, 
         uploaded: mergeRequest, 
         file: container.file, 
-        checkUploaded: verifyUpload,
+        beforeUpload: verifyUpload,
         allCal: false,
         concurNum: 10
     })
