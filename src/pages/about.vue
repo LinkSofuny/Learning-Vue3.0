@@ -6,6 +6,7 @@
     <el-button type="primary" @click="handleUpload">Upload</el-button>
     <el-button type="info" @click="handleStop">stop Upload</el-button>
     <el-button type="success" @click="handlerResume" disabled>Resume</el-button>
+
 </template>
 
 <script setup>
@@ -16,14 +17,29 @@ import createChunkUploadTask from '../../../chunk-up/src/main.ts'
 const SIZE = 10 * 1024 * 1024
 let container = reactive({ file: null, hash: '', worker: null })
 let requsetListNow = reactive([])
+let state = reactive({
+    fileChunkArr: []
+})
+let uploadTask = reactive({})
 
 const log = v => console.log(v)
 
 // 文件处理
-function handleFileChange(e) {
+async function handleFileChange(e) {
     const [file] = e.target.files
     if (!file) return
     container.file = file
+
+    uploadTask = createChunkUploadTask({
+        chunkRequset: chunkRequset, 
+        uploaded: mergeRequest, 
+        file: container.file, 
+        beforeUpload: verifyUpload,
+        allCal: false,
+        concurNum: 10
+    })
+    state.fileChunkArr = await uploadTask.on()
+    log('fileChunkArr', state.fileChunkArr)
 }
 
 // todo 此时还没有hash值
@@ -37,16 +53,8 @@ async function handlerResume() {
 
 // 上传
 async function handleUpload() {
-    console.log('container.file', container.file);
     if (!container.file) return
-    createChunkUploadTask({
-        chunkRequset: chunkRequset, 
-        uploaded: mergeRequest, 
-        file: container.file, 
-        beforeUpload: verifyUpload,
-        allCal: false,
-        concurNum: 10
-    })
+    uploadTask.send()
 }
 
 // 切片上传
@@ -102,5 +110,9 @@ async function handleStop() {
 </script>
 
 <style>
-
+.gap {
+    margin-top: 20px;
+    height: 20px;
+    background-color: #ccc
+}
 </style>
